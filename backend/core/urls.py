@@ -20,6 +20,6 @@ from core import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/test/', views.test_api),
+    path('api/analisar/', views.analisar_credito),
     path('api/autenticacao/', include('autenticacao.urls')),
 ]
