@@ -8,4 +8,6 @@ dependencies = [
     "django>=6.0.4",
     "django-cors-headers>=4.9.0",
     "djangorestframework>=3.17.1",
+    "belvo-python>=0.8.0",
+    "python-dotenv>=1.0.0",
 ]

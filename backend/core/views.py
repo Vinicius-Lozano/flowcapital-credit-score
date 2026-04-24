@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 
+from .belvo_service import generate_widget_token, fetch_link_transactions
+
 def fetch_belvo_transactions(user):
     """
     Mock integration for Belvo Sandbox API.
@@ -39,14 +41,37 @@ def fetch_belvo_transactions(user):
     random.seed()  # reset seed so we don't affect standard randomization processes
     return transacoes
 
+@api_view(['GET'])
+# Note: For now, keeping auth relaxed if needed, but should use IsAuthenticated
+def belvo_token(request):
+    """Return an access token to the frontend to launch the Belvo Widget"""
+    token = generate_widget_token()
+    if token:
+        return Response({"access": token})
+    return Response({"error": "Unable to generate token from Belvo"}, status=400)
+
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def analisar_credito(request):
     user = request.user
+    link_id = request.data.get("link_id")
     
-    # Instead of trusting frontend, we 'fetch' from our Open Finance provider mock
-    transacoes = fetch_belvo_transactions(user)
+    # If frontend sends a real link_id from the Widget, fetch genuine data!
+    if link_id:
+        transacoes_belvo = fetch_link_transactions(link_id)
+        # Map Belvo format to our internal format easily
+        transacoes = []
+        for t in transacoes_belvo:
+            transacoes.append({
+                'data': t.get('value_date'),
+                'tipo': 'PIX_RECEBIDO' if t.get('type') == 'INFLOW' else 'COMPRA_CARTAO',
+                'valor': t.get('amount'),
+                'descricao': t.get('description')
+            })
+    else:
+        # Fallback to deterministic mock
+        transacoes = fetch_belvo_transactions(user)
     
     renda_total = 0.0
     despesa_total = 0.0

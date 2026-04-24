@@ -21,5 +21,6 @@ from core import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/analisar/', views.analisar_credito),
+    path('api/belvo/token/', views.belvo_token),
     path('api/autenticacao/', include('autenticacao.urls')),
 ]
