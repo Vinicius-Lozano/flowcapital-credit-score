@@ -1,123 +1,185 @@
 import random
+import uuid
 from datetime import date
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import IsAuthenticated
+
+from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from .belvo_service import generate_widget_token, fetch_link_transactions
+from .belvo_service import fetch_link_transactions, generate_widget_token
+from . import aws_services
 
-def fetch_belvo_transactions(user):
+
+def _transacoes_mock(user):
     """
-    Mock integration for Belvo Sandbox API.
-    Generates a deterministic simulation based on the user's CPF and the current month.
+    Gera transações simuladas de forma determinística pelo CPF + mês.
+    Simula o perfil de um trabalhador de renda variável (ex: motorista de app).
     """
     hoje = date.today()
-    seed = f"{user.cpf}_{hoje.month}_{hoje.year}"
-    random.seed(seed)
-    
+    random.seed(f"{user.cpf}_{hoje.month}_{hoje.year}")
+
     transacoes = []
-    
-    # Random income transfers (Gig worker / Uber: R$ 5 to R$ 200)
-    num_entradas = random.randint(20, 80)
-    for _ in range(num_entradas):
+
+    for _ in range(random.randint(20, 80)):
         transacoes.append({
             'data': hoje.isoformat(),
             'tipo': 'PIX_RECEBIDO',
             'valor': round(random.uniform(5, 200), 2),
-            'descricao': 'Recebimento de Corridas (App)'
+            'descricao': 'Recebimento de Corridas (App)',
         })
-        
-    # Random expenses
-    num_saidas = random.randint(2, 6)
-    for _ in range(num_saidas):
+
+    for _ in range(random.randint(2, 6)):
         transacoes.append({
             'data': hoje.isoformat(),
             'tipo': random.choice(['BOLETO_PAGO', 'COMPRA_CARTAO']),
             'valor': round(random.uniform(100, 3000), 2),
-            'descricao': 'Despesa Corporativa'
+            'descricao': 'Despesa',
         })
-        
-    random.seed()  # reset seed so we don't affect standard randomization processes
+
+    random.seed()
     return transacoes
 
+
+def _calcular_score(transacoes):
+    renda = 0.0
+    despesa = 0.0
+
+    for t in transacoes:
+        tipo = t.get('tipo')
+        valor = float(t.get('valor', 0))
+        if tipo in ('PIX_RECEBIDO', 'TED_RECEBIDO'):
+            renda += valor
+        elif tipo in ('BOLETO_PAGO', 'COMPRA_CARTAO', 'TARIFA_BANCARIA', 'TED_ENVIADO'):
+            despesa += valor
+
+    score = 300
+    if renda > despesa * 1.5:
+        score += 450
+    elif renda > despesa:
+        score += 250
+    else:
+        score -= 100
+
+    score = max(0, min(1000, int(score)))
+
+    if score >= 700:
+        status_credito, cor = 'Crédito Aprovado!', 'green'
+    elif score >= 500:
+        status_credito, cor = 'Microcrédito Aprovado', 'orange'
+    else:
+        status_credito, cor = 'Crédito Negado', 'red'
+
+    return score, status_credito, cor, renda, despesa
+
+
+# ── Endpoints ─────────────────────────────────────────────────────────────────
+
 @api_view(['GET'])
-# Note: For now, keeping auth relaxed if needed, but should use IsAuthenticated
 def belvo_token(request):
-    """Return an access token to the frontend to launch the Belvo Widget"""
     token = generate_widget_token()
     if token:
-        return Response({"access": token})
-    return Response({"error": "Unable to generate token from Belvo"}, status=400)
+        return Response({'access': token})
+    return Response({'erro': 'Não foi possível gerar token Belvo.'}, status=400)
+
 
 @api_view(['POST'])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def analisar_credito(request):
-    user = request.user
-    link_id = request.data.get("link_id")
-    
-    # If frontend sends a real link_id from the Widget, fetch genuine data!
+    """
+    Analisa o crédito do usuário com base em transações bancárias.
+    Enriquece o resultado com análise narrativa via Amazon Bedrock (Claude 3 Haiku).
+    """
+    link_id = request.data.get('link_id')
+
     if link_id:
-        transacoes_belvo = fetch_link_transactions(link_id)
-        # Map Belvo format to our internal format easily
-        transacoes = []
-        for t in transacoes_belvo:
-            transacoes.append({
+        raw = fetch_link_transactions(link_id)
+        transacoes = [
+            {
                 'data': t.get('value_date'),
                 'tipo': 'PIX_RECEBIDO' if t.get('type') == 'INFLOW' else 'COMPRA_CARTAO',
                 'valor': t.get('amount'),
-                'descricao': t.get('description')
-            })
+                'descricao': t.get('description'),
+            }
+            for t in raw
+        ]
     else:
-        # Fallback to deterministic mock
-        transacoes = fetch_belvo_transactions(user)
-    
-    renda_total = 0.0
-    despesa_total = 0.0
-    
-    # Motor Lendo o Extrato
-    for transacao in transacoes:
-        tipo = transacao.get('tipo')
-        valor = float(transacao.get('valor', 0))
-        
-        if tipo == 'PIX_RECEBIDO':
-            renda_total += valor
-        elif tipo in ['BOLETO_PAGO', 'COMPRA_CARTAO', 'TARIFA_BANCARIA']:
-            despesa_total += valor
+        transacoes = _transacoes_mock(request.user)
 
-    # Algoritmo de Score Base
-    score = 300 
-    
-    if renda_total > (despesa_total * 1.5):
-        score += 450  # Excelente pagador
-    elif renda_total > despesa_total:
-        score += 250  # Saudável
-    else:
-        score -= 100  # Risco de calote
-        
-    # Travas de limite (0 a 1000)
-    score_final = max(0, min(1000, int(score)))
+    score, status_credito, cor, renda, despesa = _calcular_score(transacoes)
 
-    # Decisão
-    if score_final >= 700:
-        status = "Crédito Aprovado!"
-        cor = "green"
-    elif score_final >= 500:
-        status = "Microcrédito Aprovado"
-        cor = "orange"
-    else:
-        status = "Crédito Negado"
-        cor = "red"
+    analise_ia = ''
+    try:
+        analise_ia = aws_services.gerar_analise_credito_ia(transacoes, score, renda, despesa)
+    except Exception as e:
+        print(f'[Bedrock] indisponível: {e}')
 
     return Response({
-        "score": score_final,
-        "status": status,
-        "cor": cor,
-        "detalhes": {
-            "renda_calculada": f"R$ {renda_total:.2f}",
-            "despesa_calculada": f"R$ {despesa_total:.2f}",
-            "qtd_transacoes_analisadas": len(transacoes)
+        'score': score,
+        'status': status_credito,
+        'cor': cor,
+        'analise_ia': analise_ia,
+        'detalhes': {
+            'renda_calculada': f'R$ {renda:.2f}',
+            'despesa_calculada': f'R$ {despesa:.2f}',
+            'qtd_transacoes_analisadas': len(transacoes),
         },
-        "transacoes": transacoes
+        'transacoes': transacoes,
+    })
+
+
+@api_view(['POST'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def upload_extrato_pdf(request):
+    """
+    Recebe um PDF de extrato bancário, sobe no S3, extrai texto via Textract
+    e usa o Bedrock para transformar o texto em transações estruturadas.
+    Retorna análise completa de crédito.
+    """
+    arquivo = request.FILES.get('pdf')
+    if not arquivo:
+        return Response({'erro': 'Envie o arquivo PDF no campo "pdf".'}, status=400)
+
+    bytes_pdf = arquivo.read()
+    nome_arquivo = f'{uuid.uuid4().hex}.pdf'
+
+    try:
+        chave_s3 = aws_services.upload_s3(bytes_pdf, nome_arquivo)
+    except Exception as e:
+        return Response({'erro': f'Falha ao salvar PDF no S3: {e}'}, status=500)
+
+    try:
+        texto_extrato = aws_services.extrair_texto_pdf(bytes_pdf)
+    except Exception as e:
+        return Response({'erro': f'Falha ao extrair texto com Textract: {e}'}, status=500)
+
+    try:
+        transacoes = aws_services.extrair_transacoes_via_ia(texto_extrato)
+    except Exception as e:
+        return Response({'erro': f'Falha ao estruturar transações com IA: {e}'}, status=500)
+
+    score, status_credito, cor, renda, despesa = _calcular_score(transacoes)
+
+    analise_ia = ''
+    try:
+        analise_ia = aws_services.gerar_analise_credito_ia(transacoes, score, renda, despesa)
+    except Exception as e:
+        print(f'[Bedrock] análise indisponível: {e}')
+
+    return Response({
+        'score': score,
+        'status': status_credito,
+        'cor': cor,
+        'analise_ia': analise_ia,
+        'arquivo_s3': chave_s3,
+        'detalhes': {
+            'renda_calculada': f'R$ {renda:.2f}',
+            'despesa_calculada': f'R$ {despesa:.2f}',
+            'qtd_transacoes_analisadas': len(transacoes),
+        },
+        'transacoes': transacoes,
     })

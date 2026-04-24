@@ -105,6 +105,8 @@
             </q-card-section>
           </q-card>
         </div>
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
       </q-page>
     </q-page-container>
   </q-layout>
@@ -158,6 +160,8 @@ async function fazerLogin() {
 <style scoped>
 .capital-login-page {
   min-height: 100vh;
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,6 +173,8 @@ async function fazerLogin() {
 }
 
 .login-wrapper {
+  position: relative;
+  z-index: 2;
   width: 100%;
   max-width: 1080px;
   display: grid;
@@ -328,6 +334,43 @@ async function fazerLogin() {
 
   .login-card {
     border-radius: 22px;
+  }
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(110px);
+  z-index: 0;
+  animation: float 10s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.blob-1 {
+  top: -12%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: rgba(37, 99, 235, 0.18);
+}
+
+.blob-2 {
+  bottom: -20%;
+  right: -12%;
+  width: 600px;
+  height: 600px;
+  background: rgba(22, 163, 74, 0.16);
+  animation-delay: -5s;
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+
+  50% {
+    transform: translateY(-30px) scale(1.05);
   }
 }
 </style>

@@ -1,0 +1,364 @@
+================================================================================
+   GUIA AWS — FLOWCAPITAL CREDIT SCORE — HACKATHON UNAMA
+   Configuração completa: integrações + hospedagem no free tier
+================================================================================
+
+TEMPO TOTAL ESTIMADO: ~1 hora
+CUSTO ESTIMADO: R$ 0,00 (exceto ~R$ 0,20 do Bedrock durante os testes/demo)
+
+Você vai precisar de:
+  - Um cartão de crédito (obrigatório pela AWS, mesmo no free tier)
+  - Um email válido para criar a conta
+  - Acesso ao email para verificar o SES
+
+================================================================================
+PARTE 1 — CRIAR CONTA AWS
+================================================================================
+
+1. Acesse: https://aws.amazon.com
+2. Clique em "Criar uma conta AWS"
+3. Preencha:
+   - Endereço de email
+   - Senha
+   - Nome da conta (ex: flowcapital-hackathon)
+4. Escolha o plano GRATUITO (Free Tier)
+5. Cadastre um cartão de crédito
+   → A AWS não cobra nada do free tier, mas o cartão é obrigatório
+   → O único custo real será ~R$ 0,20 do Amazon Bedrock durante os testes
+6. Verifique sua identidade por telefone (SMS ou ligação)
+7. Selecione o plano "Basic Support" (gratuito)
+
+REGIÃO IMPORTANTE:
+  Após entrar no console, no canto superior direito, selecione:
+  "US East (N. Virginia) — us-east-1"
+  Use essa região para TUDO que for configurar.
+  O Bedrock tem mais modelos disponíveis nessa região.
+
+================================================================================
+PARTE 2 — CRIAR USUÁRIO IAM (segurança — não usar conta root)
+================================================================================
+
+1. Na barra de pesquisa do console AWS, digite "IAM" e clique no serviço
+2. No menu lateral, clique em "Usuários" → "Criar usuário"
+3. Nome do usuário: flowcapital-hackathon
+4. Clique em "Próximo"
+5. Em "Definir permissões", escolha "Anexar políticas diretamente"
+6. Pesquise e marque cada uma das políticas abaixo:
+   ✅ AmazonS3FullAccess
+   ✅ AmazonTextractFullAccess
+   ✅ AmazonSESFullAccess
+   ✅ AmazonBedrockFullAccess
+7. Clique em "Próximo" → "Criar usuário"
+
+CRIAR CHAVES DE ACESSO:
+1. Clique no usuário "flowcapital-hackathon" que acabou de criar
+2. Vá na aba "Credenciais de segurança"
+3. Role até "Chaves de acesso" → clique em "Criar chave de acesso"
+4. Escolha "Aplicação em execução fora da AWS"
+5. Clique em "Próximo" → "Criar chave de acesso"
+6. ⚠️  BAIXE O ARQUIVO CSV AGORA — as chaves só aparecem uma vez!
+
+O arquivo CSV vai conter:
+  AWS_ACCESS_KEY_ID=AKIA...
+  AWS_SECRET_ACCESS_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+GUARDE ESSAS CHAVES EM LUGAR SEGURO.
+
+================================================================================
+PARTE 3 — CRIAR BUCKET S3
+================================================================================
+
+1. Pesquise "S3" no console e clique no serviço
+2. Clique em "Criar bucket"
+3. Configurações:
+   - Nome do bucket: flowcapital-creditscore-2025
+     (nomes S3 são globais — se já existir, adicione números/letras únicos)
+   - Região: us-east-1
+   - Configurações de bloqueio de acesso público: deixar o padrão (bloqueado)
+4. Clique em "Criar bucket"
+5. Anote o nome exato do bucket — vai precisar colocar no projeto
+
+================================================================================
+PARTE 4 — VERIFICAR EMAIL NO SES
+================================================================================
+
+ATENÇÃO: No free tier, o SES começa em modo "sandbox".
+No modo sandbox, você só consegue enviar emails para endereços verificados.
+Por isso, verifique tanto o remetente quanto os destinatários da demo.
+
+VERIFICAR O EMAIL REMETENTE:
+1. Pesquise "SES" no console → "Amazon Simple Email Service"
+2. No menu lateral: "Identidades verificadas" → "Criar identidade"
+3. Tipo de identidade: "Endereço de email"
+4. Digite o email que vai aparecer como remetente
+   (ex: seuemail@gmail.com)
+5. Clique em "Criar identidade"
+6. Acesse sua caixa de email e clique no link de verificação da AWS
+
+VERIFICAR O EMAIL DESTINATÁRIO (para a demo):
+1. Repita os passos acima para cada email que vai receber durante a demo
+2. Sem verificação, o email será bloqueado no modo sandbox
+
+DICA: Se quiser enviar para qualquer email sem restrição, solicite
+"Acesso de produção" no SES. Vá em "Account dashboard" → "Request production access".
+A aprovação pode levar algumas horas.
+
+================================================================================
+PARTE 5 — HABILITAR CLAUDE HAIKU NO BEDROCK
+================================================================================
+
+1. Pesquise "Amazon Bedrock" no console
+2. Certifique-se de estar na região us-east-1 (canto superior direito)
+3. No menu lateral, clique em "Model access"
+4. Clique em "Manage model access"
+5. Role até encontrar "Anthropic"
+6. Marque a caixa "Claude 3 Haiku"
+7. Clique em "Request model access" no final da página
+8. Aguarde — normalmente a aprovação é IMEDIATA (menos de 1 minuto)
+9. Status deve ficar "Access granted" ✅
+
+================================================================================
+PARTE 6 — HOSPEDAR O FRONTEND (S3 + CloudFront)
+================================================================================
+
+Esta parte hospeda a interface do usuário (site Quasar/Vue) na AWS.
+
+--- 6.1 PREPARAR O BUCKET PARA SITE ESTÁTICO ---
+
+1. Acesse o bucket criado na Parte 3 (flowcapital-creditscore-2025)
+2. Vá na aba "Propriedades"
+3. Role até "Hospedagem de site estático" → clique em "Editar"
+4. Habilite a hospedagem
+5. Documento de índice: index.html
+6. Documento de erro: index.html (importante para o Vue Router funcionar)
+7. Salvar alterações
+
+8. Vá na aba "Permissões"
+9. Em "Bloqueio de acesso público", clique em "Editar"
+10. DESMARQUE "Bloquear todo o acesso público"
+11. Confirme digitando "confirmar" e salve
+
+12. Em "Política do bucket", clique em "Editar" e cole o JSON abaixo
+    (substitua NOME-DO-SEU-BUCKET pelo nome real):
+
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::NOME-DO-SEU-BUCKET/*"
+    }
+  ]
+}
+
+13. Salvar política
+
+--- 6.2 FAZER BUILD DO FRONTEND ---
+
+Na máquina de desenvolvimento, dentro da pasta frontend:
+
+  pnpm run build
+
+Isso gera a pasta: frontend/dist/spa/
+
+--- 6.3 FAZER UPLOAD DOS ARQUIVOS ---
+
+1. No bucket S3, clique em "Carregar"
+2. Clique em "Adicionar pasta"
+3. Selecione TODO O CONTEÚDO dentro de frontend/dist/spa/
+   (não a pasta dist em si, mas o que está dentro dela)
+4. Clique em "Carregar"
+
+--- 6.4 CONFIGURAR CLOUDFRONT (HTTPS) ---
+
+1. Pesquise "CloudFront" no console
+2. Clique em "Criar distribuição"
+3. Configurações:
+   - Domínio de origem: selecione o endpoint do seu bucket S3
+     (vai aparecer como opção no dropdown)
+   - Política de cache: CachingOptimized
+   - Viewer protocol policy: "Redirect HTTP to HTTPS"
+4. Clique em "Criar distribuição"
+5. Aguarde o status ficar "Habilitado" (~5-10 minutos)
+6. Anote o "Nome de domínio" gerado (ex: d1234abcd.cloudfront.net)
+   → Esse é o link público do seu site!
+
+================================================================================
+PARTE 7 — HOSPEDAR O BACKEND (EC2 t2.micro)
+================================================================================
+
+O backend Django vai rodar em uma instância EC2 gratuita.
+
+--- 7.1 CRIAR A INSTÂNCIA EC2 ---
+
+1. Pesquise "EC2" no console
+2. Clique em "Executar instância"
+3. Configurações:
+   - Nome: flowcapital-backend
+   - AMI: Ubuntu Server 24.04 LTS (Free tier eligible) ✅
+   - Tipo de instância: t2.micro (Free tier eligible) ✅
+   - Par de chaves: clique em "Criar novo par de chaves"
+     - Nome: flowcapital-key
+     - Tipo: RSA
+     - Formato: .pem
+     - Clique em "Criar par de chaves" — BAIXE O ARQUIVO .pem!
+   - Grupos de segurança — clique em "Editar" e adicione as regras:
+     - SSH (porta 22) — Origem: Meu IP
+     - HTTP personalizado (porta 8000) — Origem: Qualquer lugar (0.0.0.0/0)
+     - HTTP (porta 80) — Origem: Qualquer lugar (0.0.0.0/0)
+4. Clique em "Executar instância"
+5. Aguarde o status ficar "Em execução" (~1-2 minutos)
+6. Anote o "Endereço IPv4 público" da instância (ex: 54.123.45.67)
+
+--- 7.2 CONECTAR NA INSTÂNCIA ---
+
+No terminal da sua máquina (Linux/Mac):
+
+  chmod 400 flowcapital-key.pem
+  ssh -i flowcapital-key.pem ubuntu@SEU-IP-PUBLICO
+
+No Windows, use o PuTTY ou o terminal do VS Code.
+
+--- 7.3 CONFIGURAR O SERVIDOR ---
+
+Após conectar via SSH, execute os comandos abaixo na instância:
+
+  # Atualizar o sistema
+  sudo apt update && sudo apt upgrade -y
+
+  # Instalar dependências
+  sudo apt install -y python3-pip python3-venv git curl
+
+  # Instalar uv (gerenciador de pacotes Python do projeto)
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  source $HOME/.cargo/env
+
+  # Clonar o projeto
+  git clone https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
+  cd flowcapital-credit-score/backend
+
+  # Instalar dependências do projeto
+  uv sync
+
+  # Criar arquivo de variáveis de ambiente
+  nano .env
+
+  # Cole o conteúdo abaixo no arquivo (substitua os valores reais):
+  AWS_ACCESS_KEY_ID=sua-chave-aqui
+  AWS_SECRET_ACCESS_KEY=sua-chave-secreta-aqui
+  AWS_DEFAULT_REGION=us-east-1
+  AWS_S3_BUCKET_NAME=flowcapital-creditscore-2025
+  AWS_SES_EMAIL_FROM=seu-email-verificado@gmail.com
+
+  # Salvar: Ctrl+X → Y → Enter
+
+  # Rodar as migrações
+  uv run python manage.py migrate
+
+  # Testar se está funcionando
+  uv run python manage.py runserver 0.0.0.0:8000
+
+  # Acesse no navegador: http://SEU-IP-PUBLICO:8000/api/test/
+  # Deve retornar: {"status": "conectado"}
+
+--- 7.4 MANTER O BACKEND RODANDO (sem fechar o terminal) ---
+
+  # Instalar screen para manter o processo rodando
+  sudo apt install -y screen
+
+  # Criar uma sessão screen
+  screen -S backend
+
+  # Rodar o servidor
+  uv run python manage.py runserver 0.0.0.0:8000
+
+  # Desconectar sem fechar: Ctrl+A → D
+  # Para reconectar: screen -r backend
+
+================================================================================
+PARTE 8 — CONECTAR FRONTEND COM BACKEND HOSPEDADO
+================================================================================
+
+Após hospedar o backend, você precisa atualizar o frontend para apontar
+para o IP da instância EC2 em vez de localhost.
+
+No código do frontend, substitua todas as ocorrências de:
+  http://localhost:8000
+
+Por:
+  http://SEU-IP-PUBLICO-EC2:8000
+
+Após a alteração, gere o build novamente e faça upload pro S3:
+  pnpm run build
+
+================================================================================
+PARTE 9 — RESUMO DAS INFORMAÇÕES PARA PASSAR AO DESENVOLVEDOR
+================================================================================
+
+Após completar todos os passos, anote e envie as informações abaixo:
+
+  AWS_ACCESS_KEY_ID       = (do arquivo CSV baixado no Passo 2)
+  AWS_SECRET_ACCESS_KEY   = (do arquivo CSV baixado no Passo 2)
+  AWS_DEFAULT_REGION      = us-east-1
+  AWS_S3_BUCKET_NAME      = (nome exato do bucket criado no Passo 3)
+  AWS_SES_EMAIL_FROM      = (email verificado no SES no Passo 4)
+  EC2_IP_PUBLICO          = (IP da instância criada no Passo 7)
+
+  Link do site (CloudFront): https://d1234abcd.cloudfront.net
+  Link da API (EC2):          http://SEU-IP:8000
+
+================================================================================
+RESUMO DOS SERVIÇOS E CUSTOS
+================================================================================
+
+  Serviço          | Free Tier         | Custo no hackathon
+  -----------------|-------------------|-----------------------
+  S3               | 5GB / 12 meses    | R$ 0,00
+  Textract         | 1.000 pág / 3 meses | R$ 0,00
+  SES              | 200 emails/dia    | R$ 0,00
+  Bedrock          | Sem free tier     | ~R$ 0,20 (total da demo)
+  EC2 t2.micro     | 750h / 12 meses   | R$ 0,00
+  CloudFront       | 1TB transfer      | R$ 0,00
+  TOTAL            |                   | ~R$ 0,20
+
+================================================================================
+ARQUITETURA FINAL
+================================================================================
+
+  Usuário
+    │
+    ▼
+  CloudFront (HTTPS)
+    │
+    ▼
+  S3 — Frontend Quasar (site estático)
+    │ chamadas de API
+    ▼
+  EC2 t2.micro — Backend Django
+    │ boto3
+    ├──▶ S3           (armazena extratos e relatórios)
+    ├──▶ Textract     (extrai transações do PDF)
+    ├──▶ Bedrock      (gera análise de crédito com IA)
+    └──▶ SES          (envia relatório por email)
+
+================================================================================
+TEMPO ESTIMADO POR ETAPA
+================================================================================
+
+  Parte 1 — Criar conta AWS          : 10 minutos
+  Parte 2 — Criar usuário IAM        : 5 minutos
+  Parte 3 — Criar bucket S3          : 2 minutos
+  Parte 4 — Verificar email SES      : 5 minutos
+  Parte 5 — Habilitar Bedrock        : 2 minutos
+  Parte 6 — Hospedar frontend        : 15 minutos
+  Parte 7 — Hospedar backend (EC2)   : 20 minutos
+  Parte 8 — Conectar frontend/backend: 5 minutos
+  ----------------------------------------
+  TOTAL                              : ~1 hora
+
+================================================================================
+   Qualquer dúvida, passa pras informações do Passo 9 e a gente implementa.
+================================================================================
