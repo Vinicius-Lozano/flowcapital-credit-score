@@ -112,13 +112,16 @@ def analisar_credito(request):
         transacoes = fetch_mock_transactions(user)
     elif item_id:
         transacoes_pluggy = fetch_transactions(item_id)
-        # Mapeia formato Pluggy para o nosso formato interno
+        # Mapeia formato Pluggy para o nosso formato interno.
+        # Pluggy: amount is always positive; type is 'CREDIT' or 'DEBIT'.
         for t in transacoes_pluggy:
+            tipo_pluggy = t.get('type', 'DEBIT')
+            is_credito = tipo_pluggy == 'CREDIT'
             transacoes.append({
                 'data': t.get('date'),
-                'tipo': 'PIX_RECEBIDO' if float(t.get('amount', 0)) > 0 else 'COMPRA_CARTAO',
+                'tipo': 'PIX_RECEBIDO' if is_credito else 'COMPRA_CARTAO',
                 'valor': abs(float(t.get('amount', 0))),
-                'descricao': t.get('description')
+                'descricao': t.get('description') or t.get('name', '')
             })
         origem = "Pluggy"
     else:
