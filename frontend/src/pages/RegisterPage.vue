@@ -1,87 +1,89 @@
 <template>
-  <q-page class="flex flex-center bg-grey-2">
-    <q-card style="width: 420px; max-width: 95vw" class="shadow-4">
-      <q-card-section class="bg-primary text-white text-center q-py-lg">
-        <div class="text-h5 text-weight-bold">FlowCapital</div>
-        <div class="text-caption q-mt-xs">Crie sua conta</div>
-      </q-card-section>
+  <q-layout view="lHh Lpr lFf">
+    <q-page-container>
+      <q-page class="flex flex-center bg-grey-2">
+        <q-card style="width: 420px; max-width: 95vw" class="shadow-4">
+          <q-card-section class="bg-primary text-white text-center q-py-lg">
+            <div class="text-h5 text-weight-bold">FlowCapital</div>
+            <div class="text-caption q-mt-xs">Crie sua conta</div>
+          </q-card-section>
 
-      <q-card-section class="q-pa-lg">
-        <q-form @submit.prevent="registrar">
-          <q-input
-            v-model="cpf"
-            label="CPF"
-            mask="###.###.###-##"
-            fill-mask
-            unmasked-value
-            outlined
-            class="q-mb-md"
-            :rules="[val => val.length === 11 || 'CPF incompleto']"
-          >
-            <template #prepend>
-              <q-icon name="badge" />
-            </template>
-          </q-input>
+          <q-card-section class="q-pa-lg">
+            <q-form @submit.prevent="registrar">
+              <q-input
+                v-model="cpf"
+                label="CPF"
+                mask="###.###.###-##"
+                fill-mask
+                unmasked-value
+                outlined
+                class="q-mb-md"
+                :rules="[val => !!val && val.length === 11 || 'CPF incompleto']"
+              >
+                <template #prepend>
+                  <q-icon name="badge" />
+                </template>
+              </q-input>
 
-          <q-input
-            v-model="senha"
-            label="Senha"
-            :type="mostrarSenha ? 'text' : 'password'"
-            outlined
-            class="q-mb-xs"
-            :rules="[validarSenha]"
-          >
-            <template #prepend>
-              <q-icon name="lock" />
-            </template>
-            <template #append>
-              <q-icon
-                :name="mostrarSenha ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="mostrarSenha = !mostrarSenha"
+              <q-input
+                v-model="senha"
+                label="Senha"
+                :type="mostrarSenha ? 'text' : 'password'"
+                outlined
+                class="q-mb-xs"
+                :rules="[validarSenha]"
+              >
+                <template #prepend>
+                  <q-icon name="lock" />
+                </template>
+                <template #append>
+                  <q-icon
+                    :name="mostrarSenha ? 'visibility_off' : 'visibility'"
+                    class="cursor-pointer"
+                    @click="mostrarSenha = !mostrarSenha"
+                  />
+                </template>
+              </q-input>
+
+              <div class="text-caption text-grey-6 q-mb-md q-px-sm" style="font-size: 0.75rem; line-height: 1.2">
+                Mínimo 8 caracteres com maiúscula, minúscula, número e símbolo (ex: @#$!).
+              </div>
+
+              <q-input
+                v-model="confirmarSenha"
+                label="Confirmar Senha"
+                :type="mostrarSenha ? 'text' : 'password'"
+                outlined
+                class="q-mb-md"
+                :rules="[val => val === senha || 'As senhas não conferem']"
+              >
+                <template #prepend>
+                  <q-icon name="lock_outline" />
+                </template>
+              </q-input>
+
+              <div v-if="erro" class="text-negative text-caption q-mb-md">
+                {{ erro }}
+              </div>
+
+              <q-btn
+                type="submit"
+                label="Cadastrar"
+                color="primary"
+                class="full-width q-py-sm"
+                :loading="carregando"
               />
-            </template>
-          </q-input>
+            </q-form>
+          </q-card-section>
 
-          <div class="text-caption text-grey-6 q-mb-md q-px-sm">
-            Mínimo 8 caracteres com maiúscula, minúscula, número e símbolo (ex: @#$!).
-          </div>
-
-          <q-input
-            v-model="confirmarSenha"
-            label="Confirmar Senha"
-            :type="mostrarSenha ? 'text' : 'password'"
-            outlined
-            class="q-mb-md"
-            :rules="[val => val === senha || 'As senhas não conferem']"
-          >
-            <template #prepend>
-              <q-icon name="lock_outline" />
-            </template>
-          </q-input>
-
-          <div v-if="erro" class="text-negative text-caption q-mb-md">
-            {{ erro }}
-          </div>
-
-          <q-btn
-            type="submit"
-            label="Cadastrar"
-            color="primary"
-            class="full-width q-py-sm"
-            :loading="carregando"
-          />
-        </q-form>
-      </q-card-section>
-
-      <q-card-section class="text-center q-pt-none">
-        <span class="text-grey-7 text-caption">Já tem conta? </span>
-        <router-link to="/login" class="text-primary text-caption text-weight-bold">
-          Entrar
-        </router-link>
-      </q-card-section>
-    </q-card>
-  </q-page>
+          <q-card-section class="text-center q-pt-none">
+            <span class="text-grey-7 text-caption">Já tem conta? </span>
+            <q-btn flat no-caps color="primary" label="Entrar" to="/login" class="text-caption text-weight-bold" />
+          </q-card-section>
+        </q-card>
+      </q-page>
+    </q-page-container>
+  </q-layout>
 </template>
 
 <script setup>
@@ -99,7 +101,7 @@ const carregando = ref(false)
 const erro = ref('')
 
 function validarSenha(val) {
-  if (val.length < 8) return 'Mínimo 8 caracteres'
+  if (!val || val.length < 8) return 'Mínimo 8 caracteres'
   if (!/[A-Z]/.test(val)) return 'Precisa de uma letra maiúscula'
   if (!/[a-z]/.test(val)) return 'Precisa de uma letra minúscula'
   if (!/\d/.test(val)) return 'Precisa de um número'
@@ -116,9 +118,13 @@ async function registrar() {
       senha: senha.value,
       confirmar_senha: confirmarSenha.value,
     })
-    localStorage.setItem('token', resposta.data.token)
-    router.push('/')
+    
+    if (resposta.data.token) {
+        localStorage.setItem('token', resposta.data.token)
+    }
+    router.push('/login') // Após registrar, manda para o login ou direto para a home
   } catch (e) {
+    console.error(e)
     const dados = e.response?.data
     if (dados?.cpf) {
       erro.value = dados.cpf[0]
@@ -127,7 +133,7 @@ async function registrar() {
     } else if (dados?.non_field_errors) {
       erro.value = dados.non_field_errors[0]
     } else {
-      erro.value = 'Erro ao cadastrar. Tente novamente.'
+      erro.value = 'Erro ao cadastrar. Verifique se o servidor está rodando.'
     }
   } finally {
     carregando.value = false
