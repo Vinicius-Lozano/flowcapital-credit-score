@@ -6,7 +6,7 @@
           <q-icon name="account_balance_wallet" class="q-mr-sm" color="primary" />
           FlowCapital
         </q-btn>
-        
+
         <q-space />
 
         <div class="row q-gutter-sm">
