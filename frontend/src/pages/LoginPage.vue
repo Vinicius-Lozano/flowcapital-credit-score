@@ -94,7 +94,7 @@ async function fazerLogin() {
     
     // Sucesso
     localStorage.setItem('token', resposta.data.token)
-    router.push('/')
+    router.push('/dashboard')
   } catch (e) {
     console.error('Erro de login:', e)
     // Se o backend ainda não estiver pronto, use isto para "pular" o login no Hackathon:

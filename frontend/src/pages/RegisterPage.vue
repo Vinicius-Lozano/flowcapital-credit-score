@@ -121,8 +121,10 @@ async function registrar() {
     
     if (resposta.data.token) {
         localStorage.setItem('token', resposta.data.token)
+        router.push('/dashboard')
+    } else {
+        router.push('/login')
     }
-    router.push('/login') // Após registrar, manda para o login ou direto para a home
   } catch (e) {
     console.error(e)
     const dados = e.response?.data
