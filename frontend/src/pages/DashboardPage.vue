@@ -85,8 +85,6 @@ const router = useRouter()
 const conectando = ref(false)
 const resultado = ref(null)
 
-const API_URL = process.env.API_URL
-
 const colunas = [
   { name: 'data', align: 'left', label: 'Data', field: 'data', sortable: true },
   { name: 'descricao', align: 'left', label: 'Descrição', field: 'descricao', sortable: true },
@@ -105,7 +103,7 @@ const simularConexaoBanco = async () => {
   conectando.value = true
   try {
     await new Promise(resolve => setTimeout(resolve, 1000))
-    const resposta = await axios.post(`${API_URL}/api/analisar/`, {}, {
+    const resposta = await axios.post('http://localhost:8000/api/analisar/', {}, {
       headers: {
         Authorization: `Token ${token}`
       }
