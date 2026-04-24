@@ -1,86 +1,127 @@
 <template>
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
-      <q-page class="flex flex-center bg-grey-2">
-        <q-card style="width: 420px; max-width: 95vw" class="shadow-4">
-          <q-card-section class="bg-primary text-white text-center q-py-lg">
-            <div class="text-h5 text-weight-bold">FlowCapital</div>
-            <div class="text-caption q-mt-xs">Crie sua conta</div>
-          </q-card-section>
+      <q-page class="capital-register-page">
+        <div class="register-wrapper">
+          <div class="register-brand">
+            <div class="brand-logo">CF</div>
 
-          <q-card-section class="q-pa-lg">
-            <q-form @submit.prevent="registrar">
-              <q-input
-                v-model="cpf"
-                label="CPF"
-                mask="###.###.###-##"
-                fill-mask
-                unmasked-value
-                outlined
-                class="q-mb-md"
-                :rules="[val => !!val && val.length === 11 || 'CPF incompleto']"
-              >
-                <template #prepend>
-                  <q-icon name="badge" />
-                </template>
-              </q-input>
+            <h1>Capital Flow</h1>
+            <p>
+              Crie sua conta e descubra como seu fluxo de renda pode se transformar em crédito.
+            </p>
 
-              <q-input
-                v-model="senha"
-                label="Senha"
-                :type="mostrarSenha ? 'text' : 'password'"
-                outlined
-                class="q-mb-xs"
-                :rules="[validarSenha]"
-              >
-                <template #prepend>
-                  <q-icon name="lock" />
-                </template>
-                <template #append>
-                  <q-icon
-                    :name="mostrarSenha ? 'visibility_off' : 'visibility'"
-                    class="cursor-pointer"
-                    @click="mostrarSenha = !mostrarSenha"
-                  />
-                </template>
-              </q-input>
-
-              <div class="text-caption text-grey-6 q-mb-md q-px-sm" style="font-size: 0.75rem; line-height: 1.2">
-                Mínimo 8 caracteres com maiúscula, minúscula, número e símbolo (ex: @#$!).
+            <div class="brand-points">
+              <div>
+                <strong>Cadastro simples</strong>
+                <span>Comece sua análise em poucos passos</span>
               </div>
 
-              <q-input
-                v-model="confirmarSenha"
-                label="Confirmar Senha"
-                :type="mostrarSenha ? 'text' : 'password'"
-                outlined
-                class="q-mb-md"
-                :rules="[val => val === senha || 'As senhas não conferem']"
-              >
-                <template #prepend>
-                  <q-icon name="lock_outline" />
-                </template>
-              </q-input>
-
-              <div v-if="erro" class="text-negative text-caption q-mb-md">
-                {{ erro }}
+              <div>
+                <strong>Dados protegidos</strong>
+                <span>Usamos apenas o necessário para análise</span>
               </div>
 
+              <div>
+                <strong>Crédito justo</strong>
+                <span>Modelo pensado para renda variável</span>
+              </div>
+            </div>
+          </div>
+
+          <q-card class="register-card">
+            <q-card-section class="text-center q-pb-md">
+              <div class="card-badge">Nova conta</div>
+              <div class="text-h5 text-weight-bold text-dark q-mt-md">
+                Criar cadastro
+              </div>
+              <div class="text-grey-7 q-mt-xs">
+                Preencha seus dados para acessar a plataforma.
+              </div>
+            </q-card-section>
+
+            <q-card-section class="q-pa-lg">
+              <q-form @submit.prevent="registrar">
+                <q-input
+                  v-model="cpf"
+                  label="CPF"
+                  mask="###.###.###-##"
+                  fill-mask
+                  unmasked-value
+                  outlined
+                  class="q-mb-md custom-input"
+                  :rules="[(val) => (!!val && val.length === 11) || 'CPF incompleto']"
+                >
+                  <template #prepend>
+                    <q-icon name="badge" color="primary" />
+                  </template>
+                </q-input>
+
+                <q-input
+                  v-model="senha"
+                  label="Senha"
+                  :type="mostrarSenha ? 'text' : 'password'"
+                  outlined
+                  class="q-mb-xs custom-input"
+                  :rules="[validarSenha]"
+                >
+                  <template #prepend>
+                    <q-icon name="lock" color="primary" />
+                  </template>
+
+                  <template #append>
+                    <q-icon
+                      :name="mostrarSenha ? 'visibility_off' : 'visibility'"
+                      class="cursor-pointer"
+                      @click="mostrarSenha = !mostrarSenha"
+                    />
+                  </template>
+                </q-input>
+
+                <div class="password-hint">
+                  Mínimo 8 caracteres com maiúscula, minúscula, número e símbolo.
+                </div>
+
+                <q-input
+                  v-model="confirmarSenha"
+                  label="Confirmar senha"
+                  :type="mostrarSenha ? 'text' : 'password'"
+                  outlined
+                  class="q-mb-md custom-input"
+                  :rules="[(val) => val === senha || 'As senhas não conferem']"
+                >
+                  <template #prepend>
+                    <q-icon name="lock_outline" color="primary" />
+                  </template>
+                </q-input>
+
+                <div v-if="erro" class="error-box q-mb-md">
+                  {{ erro }}
+                </div>
+
+                <q-btn
+                  type="submit"
+                  label="Cadastrar"
+                  unelevated
+                  no-caps
+                  class="full-width primary-gradient-btn q-py-sm"
+                  :loading="carregando"
+                />
+              </q-form>
+            </q-card-section>
+
+            <q-card-section class="text-center q-pt-none">
+              <span class="text-grey-7 text-caption">Já tem conta? </span>
               <q-btn
-                type="submit"
-                label="Cadastrar"
-                color="primary"
-                class="full-width q-py-sm"
-                :loading="carregando"
+                flat
+                no-caps
+                label="Entrar"
+                to="/login"
+                class="text-caption text-weight-bold login-link"
               />
-            </q-form>
-          </q-card-section>
-
-          <q-card-section class="text-center q-pt-none">
-            <span class="text-grey-7 text-caption">Já tem conta? </span>
-            <q-btn flat no-caps color="primary" label="Entrar" to="/login" class="text-caption text-weight-bold" />
-          </q-card-section>
-        </q-card>
+            </q-card-section>
+          </q-card>
+        </div>
       </q-page>
     </q-page-container>
   </q-layout>
@@ -114,22 +155,24 @@ function validarSenha(val) {
 async function registrar() {
   erro.value = ''
   carregando.value = true
+
   try {
     const resposta = await axios.post(`${API_URL}/api/autenticacao/registrar/`, {
       cpf: cpf.value,
       senha: senha.value,
       confirmar_senha: confirmarSenha.value,
     })
-    
+
     if (resposta.data.token) {
-        localStorage.setItem('token', resposta.data.token)
-        router.push('/dashboard')
-    } else {
-        router.push('/login')
+      localStorage.setItem('token', resposta.data.token)
     }
+
+    router.push('/login')
   } catch (e) {
     console.error(e)
+
     const dados = e.response?.data
+
     if (dados?.cpf) {
       erro.value = dados.cpf[0]
     } else if (dados?.senha) {
@@ -144,3 +187,190 @@ async function registrar() {
   }
 }
 </script>
+
+<style scoped>
+.capital-register-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 18px;
+  background:
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.38), transparent 35%),
+    radial-gradient(circle at bottom right, rgba(22, 163, 74, 0.22), transparent 35%),
+    linear-gradient(135deg, #020617, #0f172a);
+}
+
+.register-wrapper {
+  width: 100%;
+  max-width: 1080px;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 42px;
+  align-items: center;
+}
+
+.register-brand {
+  color: white;
+}
+
+.brand-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #2563eb, #22c55e);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 1.25rem;
+  margin-bottom: 24px;
+  box-shadow: 0 16px 38px rgba(37, 99, 235, 0.35);
+}
+
+.register-brand h1 {
+  font-size: 3.1rem;
+  line-height: 1;
+  font-weight: 900;
+  margin: 0 0 16px;
+}
+
+.register-brand p {
+  max-width: 520px;
+  font-size: 1.08rem;
+  line-height: 1.7;
+  color: #cbd5e1;
+  margin: 0;
+}
+
+.brand-points {
+  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.brand-points div {
+  padding: 16px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.72);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.brand-points strong {
+  display: block;
+  color: white;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.brand-points span {
+  color: #cbd5e1;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 460px;
+  justify-self: end;
+  border-radius: 28px;
+  padding-top: 8px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.38);
+}
+
+.card-badge {
+  display: inline-block;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 800;
+  font-size: 0.78rem;
+}
+
+.custom-input :deep(.q-field__control) {
+  border-radius: 14px;
+}
+
+.password-hint {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.primary-gradient-btn {
+  min-height: 46px;
+  border-radius: 14px;
+  font-weight: 800;
+  color: white;
+  background: linear-gradient(135deg, #2563eb, #16a34a);
+  box-shadow: 0 14px 32px rgba(37, 99, 235, 0.25);
+}
+
+.primary-gradient-btn:hover {
+  transform: translateY(-1px);
+}
+
+.login-link {
+  color: #2563eb;
+}
+
+.error-box {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  .register-wrapper {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .register-card {
+    justify-self: center;
+  }
+
+  .register-brand {
+    text-align: center;
+  }
+
+  .brand-logo {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .register-brand p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .brand-points {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .capital-register-page {
+    padding: 24px 14px;
+  }
+
+  .register-brand h1 {
+    font-size: 2.25rem;
+  }
+
+  .register-card {
+    border-radius: 22px;
+  }
+}
+</style>
