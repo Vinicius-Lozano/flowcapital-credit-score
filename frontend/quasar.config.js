@@ -49,7 +49,9 @@ export default defineConfig((/* ctx */) => {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+        API_URL: process.env.VITE_API_URL || 'http://localhost:8000'
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,

@@ -25,12 +25,12 @@ load_dotenv(BASE_DIR.parent / '.env')
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-5&iz+eoi2uk1z-y+^h*j4(9xui@g!cpmzxtb5z1@)i8ypuheir'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-5&iz+eoi2uk1z-y+^h*j4(9xui@g!cpmzxtb5z1@)i8ypuheir')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS', '*').split(',')
 
 
 # Application definition
@@ -123,4 +123,13 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# CORS — allow all origins for hackathon; lock down for production later
 CORS_ALLOW_ALL_ORIGINS = True
+
+# =============================================
+# AWS Settings (read from .env, NEVER hardcode)
+# =============================================
+AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY', '')
+AWS_DEFAULT_REGION = os.getenv('AWS_DEFAULT_REGION', 'us-east-1')
+AWS_S3_BUCKET_NAME = os.getenv('AWS_S3_BUCKET_NAME', '')

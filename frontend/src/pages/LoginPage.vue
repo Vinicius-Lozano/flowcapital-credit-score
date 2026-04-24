@@ -82,12 +82,14 @@ const mostrarSenha = ref(false)
 const carregando = ref(false)
 const erro = ref('')
 
+const API_URL = process.env.API_URL
+
 async function fazerLogin() {
   erro.value = ''
   carregando.value = true
   
   try {
-    const resposta = await axios.post('http://localhost:8000/api/autenticacao/login/', {
+    const resposta = await axios.post(`${API_URL}/api/autenticacao/login/`, {
       cpf: cpf.value,
       senha: senha.value,
     })

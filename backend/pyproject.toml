@@ -10,4 +10,6 @@ dependencies = [
     "djangorestframework>=3.17.1",
     "belvo-python>=0.8.0",
     "python-dotenv>=1.0.0",
+    "boto3>=1.35.0",
+    "requests>=2.32.0",
 ]

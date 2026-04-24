@@ -100,6 +100,8 @@ const mostrarSenha = ref(false)
 const carregando = ref(false)
 const erro = ref('')
 
+const API_URL = process.env.API_URL
+
 function validarSenha(val) {
   if (!val || val.length < 8) return 'Mínimo 8 caracteres'
   if (!/[A-Z]/.test(val)) return 'Precisa de uma letra maiúscula'
@@ -113,7 +115,7 @@ async function registrar() {
   erro.value = ''
   carregando.value = true
   try {
-    const resposta = await axios.post('http://localhost:8000/api/autenticacao/registrar/', {
+    const resposta = await axios.post(`${API_URL}/api/autenticacao/registrar/`, {
       cpf: cpf.value,
       senha: senha.value,
       confirmar_senha: confirmarSenha.value,
