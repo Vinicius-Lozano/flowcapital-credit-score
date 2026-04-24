@@ -1,5 +1,5 @@
 <template>
-  <q-page class="capital-dashboard-page">
+  <div class="capital-dashboard-page">
     <div class="dashboard-wrapper">
 
       <!-- Nav Bar -->
@@ -164,7 +164,7 @@
 
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
-  </q-page>
+  </div>
 </template>
 
 <script setup>
@@ -265,14 +265,6 @@ const sair = () => {
 
 onMounted(() => {
   if (!token()) router.push('/login')
-  
-  // Inclui o script da Pluggy no montagem
-  if (!document.getElementById('pluggy-widget-script')) {
-    const script = document.createElement('script')
-    script.id = 'pluggy-widget-script'
-    script.src = 'https://cdn.pluggy.ai/pluggy-connect/v1.0.0/pluggy-connect.js'
-    document.head.appendChild(script)
-  }
 })
 </script>
 

@@ -1,8 +1,6 @@
 <template>
-  <q-layout view="lHh Lpr lFf">
-    <q-page-container>
-      <q-page class="capital-register-page">
-        <div class="register-wrapper">
+  <div class="capital-register-page">
+    <div class="register-wrapper">
           <div class="register-brand">
             <div class="brand-logo">CF</div>
 
@@ -124,9 +122,7 @@
         </div>
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
-      </q-page>
-    </q-page-container>
-  </q-layout>
+  </div>
 </template>
 
 <script setup>
