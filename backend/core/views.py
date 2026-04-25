@@ -77,6 +77,63 @@ def _calcular_score(transacoes):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def demo_publico(request):
+    """Endpoint público para a demonstração na landing page (sem autenticação)."""
+    transacoes = [
+        {'data': '2026-04-20', 'tipo': 'PIX_RECEBIDO',    'valor': 1500.0, 'descricao': 'Serviço Prestado — Cliente A'},
+        {'data': '2026-04-21', 'tipo': 'BOLETO_PAGO',     'valor': 850.0,  'descricao': 'Aluguel Equipamento'},
+        {'data': '2026-04-22', 'tipo': 'PIX_RECEBIDO',    'valor': 3200.0, 'descricao': 'Serviço Prestado — Cliente B'},
+        {'data': '2026-04-23', 'tipo': 'COMPRA_CARTAO',   'valor': 450.0,  'descricao': 'Supermercado'},
+        {'data': '2026-04-23', 'tipo': 'TARIFA_BANCARIA', 'valor': 35.0,   'descricao': 'Manutenção de Conta'},
+    ]
+    score, status_credito, cor, renda, despesa = _calcular_score(transacoes)
+    return Response({
+        'score': score,
+        'status': status_credito,
+        'cor': cor,
+        'detalhes': {
+            'renda_calculada':           f'R$ {renda:.2f}',
+            'despesa_calculada':         f'R$ {despesa:.2f}',
+            'qtd_transacoes_analisadas': len(transacoes),
+        },
+        'transacoes': transacoes,
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def admin_painel(request):
+    """Retorna estatísticas e lista de usuários. Restrito a is_staff=True."""
+    if not request.user.is_staff:
+        return Response({'erro': 'Acesso negado.'}, status=403)
+
+    Usuario = get_user_model()
+    inicio_mes = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+    def mascarar(cpf):
+        return f'***.{cpf[3:6]}.{cpf[6:9]}-**' if len(cpf) >= 9 else '***-**'
+
+    usuarios = list(Usuario.objects.order_by('-criado_em')[:200])
+
+    return Response({
+        'total_usuarios':   Usuario.objects.count(),
+        'novos_este_mes':   Usuario.objects.filter(criado_em__gte=inicio_mes).count(),
+        'usuarios': [
+            {
+                'id':        u.id,
+                'cpf':       mascarar(u.cpf),
+                'criado_em': u.criado_em.strftime('%d/%m/%Y %H:%M'),
+                'is_staff':  u.is_staff,
+                'is_active': u.is_active,
+            }
+            for u in usuarios
+        ],
+    })
+
+
 @api_view(['GET'])
 def belvo_token(request):
     token = generate_widget_token()

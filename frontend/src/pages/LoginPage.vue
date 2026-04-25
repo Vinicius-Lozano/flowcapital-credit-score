@@ -2,6 +2,7 @@
   <q-layout view="lHh Lpr lFf">
     <q-page-container>
       <q-page class="capital-login-page">
+        <div class="grid-overlay"></div>
         <div class="login-wrapper">
           <div class="login-brand">
             <div class="brand-logo">CF</div>
@@ -114,10 +115,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import axios from 'axios'
-
-const router = useRouter()
 
 const cpf = ref('')
 const senha = ref('')
@@ -138,7 +136,7 @@ async function fazerLogin() {
     })
 
     localStorage.setItem('token', resposta.data.token)
-    router.push('/dashboard')
+    window.location.href = '/#/dashboard'
   } catch (e) {
     console.error('Erro de login:', e)
 
@@ -158,6 +156,17 @@ async function fazerLogin() {
 </script>
 
 <style scoped>
+.grid-overlay {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(37, 99, 235, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(37, 99, 235, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  z-index: 0;
+}
+
 .capital-login-page {
   min-height: 100vh;
   position: relative;

@@ -12,6 +12,10 @@ const routes = [
     component: () => import('pages/DashboardPage.vue'),
   },
   {
+    path: '/superadmin',
+    component: () => import('pages/AdminPage.vue'),
+  },
+  {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [{ path: '', component: () => import('pages/IndexPage.vue') }],

@@ -20,8 +20,10 @@ from core import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/demo/', views.demo_publico),
     path('api/analisar/', views.analisar_credito),
     path('api/upload-extrato/', views.upload_extrato_pdf),
+    path('api/admin/painel/', views.admin_painel),
     path('api/belvo/token/', views.belvo_token),
     path('api/autenticacao/', include('autenticacao.urls')),
 ]
