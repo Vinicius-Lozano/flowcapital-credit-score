@@ -1,153 +1,150 @@
-# 💰 FlowCapital — Credit Score com Open Finance
+# 💰 FlowCapital — Crédito Inteligente com Open Finance
 
 ## 📌 Visão Geral
 
-O **FlowCapital** é uma plataforma de análise de crédito baseada em Open Finance, desenvolvida para oferecer um score mais justo e acessível, especialmente para pessoas sem histórico bancário tradicional.
+O **FlowCapital** é uma plataforma de análise de crédito que conecta usuários e empresas, utilizando dados financeiros reais para reduzir burocracia e acelerar decisões de crédito.
 
-A solução permite que usuários compartilhem seus dados financeiros com consentimento, possibilitando uma análise mais precisa do seu comportamento financeiro.
+A proposta é oferecer um **score rápido, acessível e confiável**, facilitando o acesso ao crédito e ajudando empresas a encontrar bons clientes.
 
 ---
 
-## 🎯 Problema
+## 🚨 Problema
 
-Muitos brasileiros, principalmente trabalhadores informais e autônomos, têm dificuldade em conseguir crédito por não possuírem histórico bancário suficiente ou score adequado nos modelos tradicionais.
+O processo tradicional de análise de crédito é:
+
+* burocrático
+* demorado
+* pouco acessível
+
+Além disso:
+
+* empresas têm dificuldade em avaliar risco com segurança
+* instituições têm dificuldade em encontrar bons clientes
+* usuários enfrentam barreiras para conseguir crédito
+
+---
+
+## 🎯 Público-alvo
+
+### 🏢 B2B (Empresas)
+
+* empresas que desejam avaliar clientes com mais segurança
+* instituições que buscam reduzir risco
+
+### 👤 B2C (Usuários)
+
+* pessoas em busca de crédito rápido
+* usuários sem histórico bancário tradicional
 
 ---
 
 ## 🚀 Solução
 
-O FlowCapital utiliza dados financeiros alternativos, como fluxo de caixa, frequência de renda e padrão de gastos, para gerar um score de crédito mais inclusivo e realista.
+O FlowCapital oferece uma plataforma simples e rápida que:
+
+* gera score de crédito instantaneamente
+* analisa entradas e despesas do usuário
+* reduz burocracia no processo
+* compartilha o score com empresas (com consentimento via Open Finance)
 
 ---
 
-## 👥 Público-alvo
+## 🔥 Diferencial
 
-* Trabalhadores autônomos
-* Freelancers
-* Pequenos empreendedores
-* Pessoas sem histórico de crédito
+* ⚡ Resposta rápida
+* 🧾 Baixa burocracia
+* 🔗 Integração com Open Finance
+* 📊 Visualização clara do perfil financeiro
+
+---
+
+## 🔄 Fluxo da Plataforma
+
+1. Usuário acessa a plataforma
+2. Obtém seu score de crédito
+3. Autoriza o compartilhamento de dados
+4. O sistema envia o score para empresas
+5. Empresas analisam e retornam propostas
+6. Usuário recebe ofertas de crédito
 
 ---
 
 ## ⚙️ Funcionalidades
 
-* Cadastro e autenticação de usuários
-* Integração simulada com Open Finance
-* Cálculo de score de crédito
-* Dashboard financeiro
-* Simulador de crédito
-* Recomendações personalizadas
+* Cadastro e login com CPF
+* Validação de CPF e senha segura
+* Dashboard com score de crédito
+* Análise de entradas e despesas
+* Integração com Open Finance (Pluggy)
+* Painel administrativo
 
 ---
 
 ## 🧠 Modelo de Score
 
-O score é calculado com base nos seguintes critérios:
+### 📥 Dados utilizados
 
-* Estabilidade de renda (40%)
-* Controle de gastos (30%)
-* Frequência de entradas (20%)
-* Saldo médio (10%)
+* renda
+* despesas
+* frequência de entradas
+* transações bancárias (Open Finance)
 
-Fórmula:
+---
 
-Score = (0.4 × renda) + (0.3 × gastos) + (0.2 × frequência) + (0.1 × saldo)
+### 🧮 Cálculo
+
+O score varia de **0 a 1000**, baseado em uma fórmula que considera a relação entre renda e despesas.
+
+---
+
+### 📊 Classificação
+
+* **Aprovado** → baixo risco
+* **Microcrédito** → risco moderado
+* **Negado** → alto risco
 
 ---
 
 ## 🏗️ Arquitetura
 
-### Frontend
-
-* Quasar Framework (Vue.js)
-* HTML
-* CSS
-* JavaScript
-
-### Backend
-
-* Django (Python)
-
-### Banco de Dados
-
-* PostgreSQL / SQLite
-
----
-
-## ☁️ Deploy
-
-A aplicação foi implantada utilizando serviços da AWS, garantindo escalabilidade, disponibilidade e confiabilidade.
-
-### 🌐 Infraestrutura
-
-* **Frontend (Quasar)**: hospedado via AWS S3 + CloudFront
-* **Backend (Django)**: hospedado em AWS EC2
-* **Banco de Dados**: AWS RDS (PostgreSQL)
-
-### 🔧 Serviços AWS utilizados
-
-* EC2 (servidor da aplicação)
-* S3 (armazenamento de arquivos e frontend)
-* CloudFront (CDN para distribuição)
-* RDS (banco de dados gerenciado)
-
----
-
-### 🚀 Acesso ao sistema
-
-* URL: https://seu-projeto.aws.com
-
-*(substituir pela URL real do projeto)*
-
----
-
-## 🔐 Segurança
-
-* Autenticação de usuários
-* Proteção de dados sensíveis
-* Consentimento do usuário para compartilhamento de dados
+![Arquitetura do Sistema](flowcapital_diagrama.png)
 
 ---
 
 ## 🛠️ Tecnologias Utilizadas
 
-* Python
-* Django
-* JavaScript
-* Quasar Framework
-* HTML
-* CSS
+* Django (Python)
+* Quasar (Vue.js)
+* JavaScript, HTML, CSS
+* PostgreSQL
+* AWS (EC2, S3, RDS)
+* Pluggy (Open Finance)
+* Docker
 
 ---
 
-## ⚠️ Limitações
+## ☁️ Deploy
 
-* Integração com Open Finance é simulada
-* Sistema simplificado para fins acadêmicos
-* Modelo de score pode ser aprimorado
-
----
-
-## 🔮 Melhorias Futuras
-
-* Integração com APIs reais de Open Finance
-* Implementação de Machine Learning
-* Aplicativo mobile
-* Sistema de notificações
+* EC2 → backend
+* S3 → frontend / assets
+* CloudFront → distribuição
+* RDS → banco de dados
 
 ---
 
-## ▶️ Como Executar o Projeto
-
-### 1. Clonar o repositório
+## 🐳 Execução com Docker (Recomendado)
 
 ```bash
-git clone https://github.com/seu-usuario/flowcapital-credit-score.git
+docker-compose up --build
 ```
+
+👉 Não é necessário subir backend e frontend separadamente.
 
 ---
 
-### 2. Backend (Django)
+## ▶️ Execução Manual (Opcional)
+
+### Backend
 
 ```bash
 cd backend
@@ -155,9 +152,7 @@ pip install -r requirements.txt
 python manage.py runserver
 ```
 
----
-
-### 3. Frontend (Quasar)
+### Frontend
 
 ```bash
 cd frontend
@@ -167,14 +162,36 @@ quasar dev
 
 ---
 
-## 👨‍💻 Equipe
+## 📱 Responsividade
 
-* Nome 1
-* Nome 2
-* Nome 3
+A aplicação é responsiva e pode ser utilizada em dispositivos móveis (via build do frontend).
 
 ---
 
-## 📄 Licença
+## ⚠️ Limitações
 
-Projeto desenvolvido para o Hackathon Semana Ubíqua.
+* não foi implementado o dashboard para empresas (B2B)
+* não foi implementado modelo de IA avançado (apenas fórmula)
+* sistema ainda em nível de protótipo
+
+---
+
+## 🔮 Melhorias Futuras
+
+* dashboard para empresas com ranking de clientes
+* uso de Machine Learning para score
+* sistema de recomendação de crédito
+* melhorias na experiência mobile
+
+---
+
+## 💰 Modelo de Negócio
+
+* empresas pagam para acessar e avaliar clientes
+* a plataforma recebe comissão sobre créditos aprovados
+
+---
+
+## 📌 Conclusão
+
+O FlowCapital propõe uma forma mais rápida e acessível de análise de crédito, utilizando Open Finance para conectar usuários e empresas de forma eficiente.
