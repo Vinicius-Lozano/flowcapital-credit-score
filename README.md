@@ -107,7 +107,7 @@ O score varia de **0 a 1000**, baseado em uma fórmula que considera a relação
 
 ## 🏗️ Arquitetura
 
-![Arquitetura do Sistema](flowcapital_diagrama.png)
+![Arquitetura do Sistema](flowcapital-arquitetura.jpg)
 
 ---
 
